@@ -26,8 +26,8 @@
 Below are the screenshots of the app's user interface for both students and administrators. All images are located in the `screens` folder:
 
 ### Screenshots for Student Features
-1. **Add Student Screen**
-   ![Add Student Screen](screens/addstudentScreen.png)
+1. **Main Page Screen**
+   ![Main Page Screen](screens/mainpageScreen.png)
 
 2. **QR Code Screen**
    ![QR Code Screen](screens/qr_codeScreen.png)
@@ -38,20 +38,23 @@ Below are the screenshots of the app's user interface for both students and admi
 4. **Success Login Screen**
    <img src="screens/successloginScreen.jpg" alt="Success Login Screen" width="400"/>
 
+5. **Success Message Screen**
+   <img src="screens/successScreen.jpg" alt="Success Message Screen" width="400"/>
+
 ---
 
 ### Screenshots for Administrator Features
 1. **Admin Login Screen**
    ![Admin Login Screen](screens/adminloginScreen.png)
 
-2. **Bulk Upload Students Screen**
-   ![Bulk Upload Students Screen](screens/bulkuploadofstudentScreen.png)
-
-3. **Main Dashboard Screen**
+2. **Main Dashboard Screen**
    ![Main Dashboard Screen](screens/maindashboardScreen.png)
 
-4. **Main Page Screen**
-   ![Main Page Screen](screens/mainpageScreen.png)
+3. **Bulk Upload Students Screen**
+   ![Bulk Upload Students Screen](screens/bulkuploadofstudentScreen.png)
+
+4. **Add Student Screen**
+   ![Add Student Screen](screens/addstudentScreen.png)
 
 5. **Log Records Screen**
    ![Log Records Screen](screens/logrecordsScreen.png)
@@ -65,8 +68,6 @@ Below are the screenshots of the app's user interface for both students and admi
 - **Database**: MySQL for student and attendance records
 - **Environment**: XAMPP for database and backend management
 - **Speech Synthesis**: Uses JavaScript's `speechSynthesis` API for real-time voice notifications.
-
----
 
 ## Installation and Setup
 
@@ -102,13 +103,7 @@ Feel free to fork the repository and submit pull requests for any enhancements o
 
 ## License
 This project is licensed under the MIT License.
+##All rights Reserved to GESTAA Inc. Solutions 2024
 
----
+ 
 
-### Notes
-1. **Speech Synthesis Feature**:
-   - Implemented via the browser's `speechSynthesis` API.
-   - Announcements are triggered each time a student logs in, mentioning their first name only.
-2. Make sure that the browser being used supports the `speechSynthesis` API for notifications to function correctly.
-
-Let me know if you want further refinements or additional sections!
