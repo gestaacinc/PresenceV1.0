@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance Capture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      crossorigin="anonymous"
+    />
+    <style>
+      /* Custom styles */
+      #autocomplete_list {
+        position: absolute;
+        border: 1px solid #ccc;
+        background-color: white;
+        width: 100%;
+        box-sizing: border-box;
+        z-index: 1000;
+        max-height: 150px;
+        overflow-y: auto;
+        border-radius: 0.5rem;
+      }
+      .autocomplete-container {
+        position: relative;
+      }
+      .custom-file-input {
+        display: none;
+      }
+      .custom-file-label {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      }
+      .custom-file-label:hover {
+        transform: scale(1.05);
+      }
+      .spinner {
+        border-top-color: transparent;
+        border-right-color: transparent;
+      }
+      .spin {
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body class="flex flex-col min-h-screen bg-blue-50">
+    <main class="flex-grow flex items-center justify-center px-4 py-4">
+      <form
+        id="attendance_form"
+        class="w-full max-w-sm bg-white shadow-md rounded-lg p-6 flex flex-col items-center"
+        style="min-height: 80vh"
+        enctype="multipart/form-data"
+      >
+        <!-- Hidden field to store session token -->
+        <input
+          type="hidden"
+          id="session_token"
+          value="{{ request.args.get('token') }}"
+        />
+
+        <!-- Logo -->
+        <img
+          src="{{ url_for('static', filename='images/img/logo.png') }}"
+          alt="System Logo"
+          class="h-24 w-24 mb-4"
+        />
+
+        <!-- Title -->
+        <h1 class="text-2xl font-bold text-blue-600 mb-3 text-center">
+          Presence V1.0
+        </h1>
+        <small class="text-gray-400 block mb-6 text-center">
+          Start typing your name to check if it's on the list. If not, contact
+          the administrator.
+        </small>
+
+        <div class="autocomplete-container w-full mb-6">
+          <div class="relative">
+            <input
+              type="text"
+              id="student_name"
+              class="border border-gray-300 rounded-lg p-3 w-full text-lg pl-10"
+              placeholder="Type your name"
+              autocomplete="off"
+              required
+            />
+            <i
+              class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            ></i>
+          </div>
+          <div id="autocomplete_list"></div>
+        </div>
+
+        <!-- Take Photo Button -->
+        <div class="relative w-full mb-6">
+          <button
+            id="take_photo_btn"
+            type="button"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md flex items-center justify-center w-full text-lg"
+          >
+            <i class="fas fa-camera mr-2"></i>
+            Take Photo
+          </button>
+          <input
+            type="file"
+            id="student_photo"
+            name="student_photo"
+            accept="image/*"
+            capture="environment"
+            class="absolute inset-0 opacity-0 cursor-pointer"
+          />
+        </div>
+
+        <!-- Submit Attendance Button -->
+        <button
+          id="submit_btn"
+          type="submit"
+          class="bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg py-3 flex items-center justify-center w-full text-lg"
+        >
+          <i class="fas fa-check mr-2"></i>
+          <span>Submit Attendance</span>
+        </button>
+
+        <!-- Spinner for Loading -->
+        <div
+          id="spinner"
+          class="hidden mt-4 w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full spin"
+        ></div>
+      </form>
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center py-3 text-xs">
+      <p>&copy; 2024 Attendance System. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+      let validStudent = false;
+      let selectedStudentName = "";
+
+      document
+        .getElementById("student_name")
+        .addEventListener("input", function () {
+          fetch("/students_autocomplete")
+            .then((response) => response.json())
+            .then((data) => {
+              const inputField = document.getElementById("student_name");
+              const autocompleteList =
+                document.getElementById("autocomplete_list");
+              autocompleteList.innerHTML = "";
+
+              validStudent = false;
+              data.forEach((name) => {
+                if (
+                  name.toLowerCase().includes(inputField.value.toLowerCase())
+                ) {
+                  const item = document.createElement("div");
+                  item.classList.add(
+                    "autocomplete-item",
+                    "p-2",
+                    "hover:bg-gray-100",
+                    "cursor-pointer",
+                    "text-lg"
+                  );
+                  item.textContent = name;
+
+                  item.addEventListener("click", function () {
+                    inputField.value = name;
+                    selectedStudentName = name;
+                    validStudent = true;
+                    autocompleteList.innerHTML = "";
+                  });
+
+                  autocompleteList.appendChild(item);
+                }
+              });
+            });
+        });
+
+      document
+        .getElementById("attendance_form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const photoInput = document.getElementById("student_photo");
+          const file = photoInput.files[0];
+          const spinner = document.getElementById("spinner");
+          const token = document.getElementById("session_token").value;
+
+          if (!validStudent) {
+            alert(
+              "No student found with that name. Please select a valid student."
+            );
+            return;
+          }
+
+          if (!file) {
+            alert("Please take or upload a photo!");
+            return;
+          }
+
+          const reader = new FileReader();
+          spinner.classList.remove("hidden");
+
+          reader.onloadend = function () {
+            const imageData = reader.result;
+            const timestamp = new Date().toISOString().replace(/[:\-T.]/g, "_");
+            const studentName = selectedStudentName.replace(/\s+/g, "_");
+            const filename = `${studentName}_${timestamp}.png`;
+
+            fetch("/log_attendance", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                name: studentName,
+                image: imageData,
+                filename: filename,
+                token: token, // Send the session token
+              }),
+            })
+              .then((response) => {
+                if (!response.ok)
+                  throw new Error("Network response was not ok");
+                return response.json();
+              })
+              .then((result) => {
+                if (result.status === "success") {
+                  setTimeout(() => {
+                    alert(
+                      result.message + " You logged in at " + result.log_time
+                    );
+                    window.location.href = `/success?student_name=${encodeURIComponent(
+                      studentName
+                    )}&log_time=${encodeURIComponent(
+                      result.log_time
+                    )}&token=${encodeURIComponent(token)}`;
+                  }, 500);
+                } else {
+                  alert(result.message);
+                  spinner.classList.add("hidden");
+                }
+                photoInput.value = "";
+              })
+              .catch((error) => {
+                alert("Error submitting attendance. Please try again.");
+                console.error("Error:", error);
+                spinner.classList.add("hidden");
+              });
+          };
+
+          if (file) reader.readAsDataURL(file);
+        });
+    </script>
+  </body>
+</html>

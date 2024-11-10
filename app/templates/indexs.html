@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Attendance Capture</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+  </head>
+  <body>
+    <h1>Attendance System</h1>
+
+    <form id="attendance_form">
+      <label for="student_name">Enter your name:</label>
+      <input type="text" id="student_name" autocomplete="off" required />
+      <button type="submit">Submit</button>
+    </form>
+
+    <!-- Camera section for capturing student picture -->
+    <div id="camera_container" style="display: none">
+      <video id="video" width="640" height="480" autoplay></video>
+      <button id="snap">Capture Photo</button>
+      <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
+
+    <script>
+      // Autocomplete functionality
+      document
+        .getElementById("student_name")
+        .addEventListener("input", function () {
+          fetch("/students_autocomplete")
+            .then((response) => response.json())
+            .then((data) => {
+              // Autocomplete logic (implement dropdown suggestions)
+              // Use the "data" array to populate suggestions
+            });
+        });
+
+      // Form submission
+      document
+        .getElementById("attendance_form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          // Open the camera to capture a picture
+          document.getElementById("camera_container").style.display = "block";
+          let video = document.getElementById("video");
+
+          // Access the camera
+          navigator.mediaDevices
+            .getUserMedia({ video: true })
+            .then(function (stream) {
+              video.srcObject = stream;
+            });
+
+          // Capture the picture
+          document
+            .getElementById("snap")
+            .addEventListener("click", function () {
+              let canvas = document.getElementById("canvas");
+              let context = canvas.getContext("2d");
+              context.drawImage(video, 0, 0, 640, 480);
+
+              // Convert the image to base64
+              let imageData = canvas.toDataURL("image/png");
+
+              // Send the image and name to the server for attendance logging
+              let studentName = document.getElementById("student_name").value;
+              fetch("/log_attendance", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ name: studentName, image: imageData }),
+              })
+                .then((response) => response.text())
+                .then((result) => {
+                  alert(result);
+                });
+            });
+        });
+    </script>
+  </body>
+</html>

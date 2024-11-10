@@ -1,0 +1,51 @@
+<div
+  id="bulkUploadModal"
+  class="modal fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden"
+>
+  <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-lg p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-blue-700">Bulk Upload Students</h2>
+      <button
+        id="closeBulkUploadModal"
+        class="text-gray-600 hover:text-gray-900 text-2xl font-bold"
+      >
+        &times;
+      </button>
+    </div>
+    <form
+      id="bulkUploadForm"
+      class="space-y-4"
+      enctype="multipart/form-data"
+      method="post"
+    >
+      <div>
+        <label for="csvFile" class="block text-gray-700 font-medium mb-1"
+          >Select CSV File</label
+        >
+        <input
+          type="file"
+          id="csvFile"
+          name="file"
+          accept=".csv"
+          class="w-full border rounded-lg p-2 focus:outline-none focus:ring focus:ring-blue-200"
+          required
+        />
+      </div>
+      <div class="flex justify-end space-x-4 mt-4">
+        <button
+          type="button"
+          id="cancelBulkUpload"
+          class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-300"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
+        >
+          Upload
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
